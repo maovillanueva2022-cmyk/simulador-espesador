@@ -2,3 +2,6 @@ streamlit
 pandas
 fpdf2
 plotly
+python-pptx
+kaleido
+matplotlib
