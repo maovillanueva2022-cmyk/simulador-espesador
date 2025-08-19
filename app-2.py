@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[34]:
+# In[35]:
 
 
 #!/usr/bin/env python
@@ -130,8 +130,7 @@ def create_summary_pdf_report(inputs, results_df):
         pdf.add_page(); pdf.chapter_title('Resultados de Proceso'); pdf.chapter_body(df_process); pdf.chapter_title('Resultados Mecánicos y de Tuberías'); pdf.chapter_body(df_mechanical)
         return bytes(pdf.output(dest='S'))
     except Exception as e:
-        st.error(f"Error al generar PDF Resumen: {e}")
-        return None
+        st.error(f"Error al generar PDF Resumen: {e}"); return None
 
 class PDF_Memoria(FPDF):
     def header(self):
