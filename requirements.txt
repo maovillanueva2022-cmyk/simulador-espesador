@@ -54,3 +54,4 @@ urllib3==2.5.0
 watchdog==6.0.0
 xlsxwriter==3.2.5
 zipp==3.23.0
+# Actualizado para forzar reinstalación
