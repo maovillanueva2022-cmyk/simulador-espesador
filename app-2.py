@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[37]:
+# In[38]:
 
 
 #!/usr/bin/env python
@@ -10,13 +10,11 @@
 import math
 import pandas as pd
 import streamlit as st
-from fpdf import FPDF
+from fpdf import FPDF, FPDFException
 from datetime import datetime
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from io import BytesIO
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 
 # =============================================================================
 # DEFINICIÓN DE DATOS GLOBALES
@@ -96,12 +94,44 @@ class Thickener:
             if inner_dia_mm >= required_diameter_mm: return inner_dia_mm / 1000.0
         return max(ASME_B36_10M_SCH40.values()) / 1000.0
 
-# ... (Las clases y funciones de reportes PDF y PPTX se omiten aquí por brevedad)
+# =============================================================================
+# CLASES Y FUNCIONES PARA REPORTES PDF
+# =============================================================================
+# ... (Se omiten por brevedad, no hay cambios aquí)
 
 # =============================================================================
 # FUNCIONES DE VISUALIZACIÓN Y GRÁFICOS
 # =============================================================================
-# (La función de Plotly permanece aquí)
+def generar_grafico_comparativo_plotly(df_reporte):
+    if 'Escenario: Con Dilucion' not in df_reporte.columns: return None
+    
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    
+    metricas_eje1 = {
+        'Flujo Total Feedwell (m³/h)': 'Flujo Volumetrico Total en Feedwell (m3/h)',
+        'Caudal de Rebose (m³/h)': 'Caudal de Rebose (m3/h)'
+    }
+    metricas_eje2 = {
+        'Tasa de Ascenso (m/h)': 'Tasa de Ascenso (m/h)',
+        'T. Residencia (s)': 'Tiempo Residencia Real (s)'
+    }
+    
+    df_eje1 = df_reporte.loc[metricas_eje1.values()].astype(float)
+    df_eje1.index = metricas_eje1.keys()
+    df_eje2 = df_reporte.loc[metricas_eje2.values()].astype(float)
+    df_eje2.index = metricas_eje2.keys()
+
+    fig.add_trace(go.Bar(x=df_eje1.index, y=df_eje1['Escenario: Sin Dilucion'], name='Sin Dilución (Eje Izquierdo)', marker_color='crimson', text=df_eje1['Escenario: Sin Dilucion'].round(1), textposition='auto'), secondary_y=False)
+    fig.add_trace(go.Bar(x=df_eje1.index, y=df_eje1['Escenario: Con Dilucion'], name='Con Dilución (Eje Izquierdo)', marker_color='lightcoral', text=df_eje1['Escenario: Con Dilucion'].round(1), textposition='auto'), secondary_y=False)
+    
+    fig.add_trace(go.Bar(x=df_eje2.index, y=df_eje2['Escenario: Sin Dilucion'], name='Sin Dilución (Eje Derecho)', marker_color='mediumblue', text=df_eje2['Escenario: Sin Dilucion'].round(1), textposition='auto'), secondary_y=True)
+    fig.add_trace(go.Bar(x=df_eje2.index, y=df_eje2['Escenario: Con Dilucion'], name='Con Dilución (Eje Derecho)', marker_color='lightskyblue', text=df_eje2['Escenario: Con Dilucion'].round(1), textposition='auto'), secondary_y=True)
+    
+    fig.update_layout(title_text='<b>Impacto de la Dilución en Parámetros Clave</b>', barmode='group', template='plotly_white', legend_title_text='Escenarios y Ejes')
+    fig.update_yaxes(title_text="<b>Caudal (m³/h)</b>", secondary_y=False)
+    fig.update_yaxes(title_text="<b>Tasa (m/h) / Tiempo (s)</b>", secondary_y=True)
+    
+    return fig
 
 # =============================================================================
 # INTERFAZ PRINCIPAL DE STREAMLIT
@@ -185,6 +215,10 @@ if st.button("Calcular Diseño"):
             
             mechanical_keys = ['Velocidad de Rotacion (RPM)', 'Torque Requerido (Nm)', 'Potencia Accionamiento (kW)','Diametro Tuberia Estandar (mm)', 'Velocidad en Tuberia Final (m/s)','Numero de Puntos de Dosificacion', 'Caudal por Punto de Dosificacion (m3/h)','Diametro Tuberia Dosificacion (mm)', 'Velocidad en Tuberia Dosificacion (m/s)','Numero de Tuberias de Descarga', 'Diametro Tuberia Descarga (mm)','Velocidad en Tuberia Descarga (m/s)', 'Numero de Tuberias de Rebose','Diametro Tuberia Rebose (mm)', 'Velocidad en Tuberia Rebose (m/s)']
             df_mechanical = df_display.loc[df_display.index.isin(mechanical_keys)].reindex(mechanical_keys).dropna(how='all'); st.subheader("Datos Mecánicos y de Tuberías"); st.data_editor(df_mechanical, height=300)
+            
+            # Las funciones de descarga de PDF se desactivan para simplificar
+            # st.header("Descargar Documentos")
+            # ...
 
 
 # In[ ]:
